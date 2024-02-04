@@ -1,0 +1,1 @@
+INSERT INTO posts (title, body) VALUES ("first post", "This is first post"), ("second post", "This is second post"), ("third post", "This is third post");

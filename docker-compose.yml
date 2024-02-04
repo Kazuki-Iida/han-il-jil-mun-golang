@@ -1,0 +1,44 @@
+version: '3' # composeファイルのバージョン
+services:
+  go_blog_app: # サービス名
+    container_name: go_blog_app
+    build: # ビルドに使うDockerファイルのパス
+      context: .
+      dockerfile: ./build/Dockerfile
+    volumes: # マウントディレクトリ
+      - ./boiler-plate:/go/src/github.com/boiler-plate
+    tty: true # コンテナの永続化
+    env_file: # .envファイル
+      - ./build/.go_env
+    environment:
+      - TZ=Asia/Tokyo
+    ports:
+      - '8080:8080'
+    depends_on:
+      - go_blog_mysql
+
+  go_blog_mysql:
+    container_name: go_blog_mysql
+    image: mysql:8.0
+    command: --default-authentication-plugin=mysql_native_password
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_ROOT_HOST: '%'
+      MYSQL_DATABASE: go_blog_db
+      MYSQL_USER: dbuser
+      MYSQL_PASSWORD: password
+    restart: always
+    ports:
+      - 3306:3306
+
+  phpmyadmin:
+    image: phpmyadmin
+    depends_on:
+      - go_blog_mysql
+    environment:
+      - PMA_ARBITRARY=1
+      - PMA_HOSTS=go_blog_mysql
+      - PMA_USER=dbuser
+      - PMA_PASSWORD=password
+    ports:
+      - "3001:80"

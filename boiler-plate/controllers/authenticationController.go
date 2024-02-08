@@ -163,10 +163,11 @@ func DashboardHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h UserController) IsAuthenticated(w http.ResponseWriter, r *http.Request) bool {
-	// CookieからセッションIDを取得
+	// リクエストヘッダからセッションIDを取得
 	session_id := r.Header.Get("session_id")
 	if session_id == "" {
-		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		// http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		// fmt.Println(w, "Unauthorized")
 		return false
 	}
 	sessionMutex.Lock()
@@ -179,10 +180,10 @@ func (h UserController) IsAuthenticated(w http.ResponseWriter, r *http.Request) 
 	sessionMutex.Unlock()
 	// セッションが有効かチェック
 	if !ok || !sessionInfo.isAllowed {
-		http.Error(w, "Forbidden", http.StatusForbidden)
+		// http.Error(w, "Forbidden", http.StatusForbidden)
+		// fmt.Println(w, "Forbidden")
 		return false
 	}
-
 	return true
 }
 

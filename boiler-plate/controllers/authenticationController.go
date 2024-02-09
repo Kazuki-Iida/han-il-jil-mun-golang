@@ -38,7 +38,12 @@ type RegisterInfo struct {
 
 func (h UserController) GetLoginUser(w http.ResponseWriter, r *http.Request) {
 	session_id := r.Header.Get("session_id")
+	fmt.Println("session_id", session_id)
 	sessionMutex.Lock()
+	if _, ok := sessions[session_id]; !ok {
+		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		return
+	}
 	userId := sessions[session_id].userId
 	for id := range sessions {
 		fmt.Println("loginHandler: Current session ID is ", id)
@@ -188,23 +193,17 @@ func (h UserController) IsAuthenticated(w http.ResponseWriter, r *http.Request) 
 }
 
 func (h UserController) LogoutHandler(w http.ResponseWriter, r *http.Request) {
-	// CookieからセッションIDを取得し、サーバーサイドでセッションを削除
-	cookie, err := r.Cookie("session_id")
-	if err == nil {
+	/// リクエストヘッダからセッションIDを取得
+	session_id := r.Header.Get("session_id")
+	if _, ok := sessions[session_id]; ok {
 		sessionMutex.Lock()
-		delete(sessions, cookie.Value)
+		delete(sessions, session_id)
 		if len(sessions) == 0 {
 			fmt.Println("logoutHandler: Current session ID is nothing")
 		}
 		sessionMutex.Unlock()
 	}
 
-	http.SetCookie(w, &http.Cookie{
-		Name:   "session_id",
-		Value:  "",
-		Path:   "/",
-		MaxAge: -1, // Cookieを削除
-	})
 	fmt.Println(sessions)
 	w.Write([]byte("Logout successful!"))
 }

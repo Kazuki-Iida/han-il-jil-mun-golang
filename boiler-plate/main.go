@@ -64,25 +64,23 @@ func main() {
 			}
 			return
 		}
-		if userHandler.IsAuthenticated(w, r) {
-			if match, _ := regexp.MatchString("/users/current/", r.URL.Path); match {
-				switch r.Method {
-				case http.MethodGet:
-					userHandler.GetLoginUser(w, r)
-				}
-				return
-			}
-			// リクエストのパスが"/posts/"の時にリクエストのメソッドによって発火する関数を変える
+		if match, _ := regexp.MatchString("/users/current/", r.URL.Path); match {
 			switch r.Method {
-			case http.MethodPost:
-				userHandler.SaveUser(w, r)
-			case http.MethodPut:
-				userHandler.EditUser(w, r)
-			case http.MethodDelete:
-				userHandler.DeleteUser(w, r)
-			default:
-				http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+			case http.MethodGet:
+				userHandler.GetLoginUser(w, r)
 			}
+			return
+		}
+		// リクエストのパスが"/posts/"の時にリクエストのメソッドによって発火する関数を変える
+		switch r.Method {
+		case http.MethodPost:
+			userHandler.SaveUser(w, r)
+		case http.MethodPut:
+			userHandler.EditUser(w, r)
+		case http.MethodDelete:
+			userHandler.DeleteUser(w, r)
+		default:
+			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		}
 	}))
 	// http.HandleFunc("/delay", enableCORS(userHandler.DelayTimeOut))

@@ -7,9 +7,13 @@ import (
 
 // Post構造体
 type Post struct {
-	ID    int    `json:"id"`
-	Title string `json:"title"`
-	Body  string `json:"body"`
+	ID           int    `json:"id"`
+	Title        string `json:"title"`
+	Body         string `json:"body"`
+	UserId       int    `json:"user_id"`
+	UserName     string `json:"user_name"`
+	CategoryId   int    `json:"category_id"`
+	CategoryName string `json:"category_name"`
 }
 
 type PostModel struct {
@@ -22,7 +26,7 @@ func NewPostModel(DB *sql.DB) *PostModel {
 
 // 全件取得する関数
 func (m *PostModel) All() ([]Post, error) {
-	rows, err := m.DB.Query("SELECT id, title, body FROM posts")
+	rows, err := m.DB.Query("SELECT p.id, p.title, p.body, u.id, u.name, c.id, c.name FROM posts p INNER JOIN users u ON p.user_id = u.id INNER JOIN categories c ON p.category_id = c.id;")
 	if err != nil {
 		return nil, err
 	}
@@ -30,11 +34,11 @@ func (m *PostModel) All() ([]Post, error) {
 
 	var posts []Post
 	for rows.Next() {
-		var post Post
-		if err := rows.Scan(&post.ID, &post.Title, &post.Body); err != nil {
+		var p Post
+		if err := rows.Scan(&p.ID, &p.Title, &p.Body, &p.UserId, &p.UserName, &p.CategoryId, &p.CategoryName); err != nil {
 			return nil, err
 		}
-		posts = append(posts, post)
+		posts = append(posts, p)
 	}
 
 	return posts, nil
@@ -42,25 +46,25 @@ func (m *PostModel) All() ([]Post, error) {
 
 // 一件取得
 func (m *PostModel) GetPostById(id int) (*Post, error) {
-	row, err := m.DB.Query("SELECT id, title, body FROM posts WHERE id = ?", id)
+	row, err := m.DB.Query("SELECT p.id, p.title, p.body, u.id, u.name, c.id, c.name FROM posts p INNER JOIN users u ON p.user_id = u.id INNER JOIN categories c ON p.category_id = c.id WHERE p.id = ?;", id)
 	if err != nil {
 		return nil, err
 	}
 	defer row.Close()
 
-	var post Post
+	var p Post
 	for row.Next() {
-		err = row.Scan(&post.ID, &post.Title, &post.Body)
+		err = row.Scan(&p.ID, &p.Title, &p.Body, &p.UserId, &p.UserName, &p.CategoryId, &p.CategoryName)
 		if err == sql.ErrNoRows {
 			return nil, fmt.Errorf("post not found")
 		} else if err != nil {
 			return nil, err
 		}
 	}
-	if post.ID == 0 {
+	if p.ID == 0 {
 		return nil, fmt.Errorf("post not found")
 	} else {
-		return &post, nil
+		return &p, nil
 	}
 }
 

@@ -186,7 +186,8 @@ func (h UserController) IsAuthenticated(w http.ResponseWriter, r *http.Request) 
 	// セッションが有効かチェック
 	if !ok || !sessionInfo.isAllowed {
 		// http.Error(w, "Forbidden", http.StatusForbidden)
-		// fmt.Println(w, "Forbidden")
+		fmt.Println("sessions", sessions)
+		fmt.Println("session_id", session_id)
 		return false
 	}
 	return true
